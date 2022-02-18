@@ -64,7 +64,7 @@ Matrix random(size_t n, size_t m, double min, double max)
         std::logic_error e{"max must be bigger than min"};
         throw e;
     }
-    Matrix output(n, std::vector<double>(m, 0.0));
+    Matrix output{zeros(n,m)};
     for(size_t i{}; i < n; i++)
     {
     for(size_t j{}; j < m; j++)
@@ -86,7 +86,7 @@ Matrix multiply(const Matrix& matrix, double c)
             throw e;
         }
     size_t n{ matrix.size() }, m{ matrix[0].size() };
-    Matrix output(n, std::vector<double>(m, 0.0));
+    Matrix output{zeros(n,m)};
     for(size_t i{}; i < n; i++)
     {
         for(size_t j{}; j < m; j++)
@@ -101,8 +101,7 @@ Matrix multiply(const Matrix& matrix1, const Matrix& matrix2)
 {      
     if(matrix1.empty() || matrix2.empty())
     {   
-        Matrix emp{};
-        return emp;
+        return matrix1;
     }
     size_t r1{ matrix1.size() }, c1{ matrix1[0].size() };
     size_t r2{ matrix2.size() }, c2{ matrix2[0].size() };
@@ -111,7 +110,7 @@ Matrix multiply(const Matrix& matrix1, const Matrix& matrix2)
         std::logic_error e{"c1 must be equal to r2"};
         throw e;
     }
-    Matrix output(r1, std::vector<double>(c2, 0.0));
+    Matrix output{zeros(r1,c2)};
     for(size_t i{}; i < r1; i++)
     {
         for(size_t j{}; j < c2; j++)
@@ -133,11 +132,10 @@ Matrix sum(const Matrix& matrix, double c)
 {
     if( matrix.empty())
     {
-        Matrix emp{};
-        return emp;
+        return matrix;
     }
     size_t n{ matrix.size() }, m{ matrix[0].size() };
-    Matrix output(n, std::vector<double>(m, 0.0));
+    Matrix output{zeros(n,m)};
     for(size_t i{}; i < n; i++)
     {
         for(size_t j{}; j < m; j++)
@@ -153,8 +151,7 @@ Matrix sum(const Matrix& matrix1, const Matrix& matrix2)
     
     if(matrix1.empty() && matrix2.empty())
     {
-        Matrix emp{};
-        return emp;
+        return matrix1;
     }
     if(matrix1.empty() || matrix2.empty())
     {
@@ -163,7 +160,7 @@ Matrix sum(const Matrix& matrix1, const Matrix& matrix2)
     }
     size_t r1{ matrix1.size() }, c1{ matrix1[0].size() };
     size_t r2{ matrix2.size() }, c2{ matrix2[0].size() };
-    Matrix output(r1, std::vector<double>(c1, 0.0));
+    Matrix output {zeros(r1,c1)};
     if(r1 != r2 || c1 != c2)
     {
         std::logic_error e{"matrixs must have same dementions"};
@@ -183,11 +180,10 @@ Matrix transpose(const Matrix& matrix)
 {   
     if( matrix.empty())
     {
-        Matrix emp{};
-        return emp;
+        return matrix;
     }
     size_t r{ matrix.size() }, c{ matrix[0].size() };
-    Matrix output(c, std::vector<double>(r, 0.0));
+    Matrix output{zeros(c,r)};
     for(size_t i{}; i < r; i++)
     {
         for(size_t j{}; j < c; j++)
@@ -201,7 +197,7 @@ Matrix transpose(const Matrix& matrix)
 Matrix minor(const Matrix& matrix, size_t n, size_t m)
 {   
     size_t r{ matrix.size() }, c{ matrix[0].size() };
-    Matrix output(r - 1, std::vector<double>(c - 1, 0.0));
+    Matrix output{zeros(r-1, c-1)};
     size_t i_minor{}, j_minor{};    
     if(matrix.empty())
     {
@@ -249,21 +245,10 @@ double determinant(const Matrix& matrix)
     }
     if(r == 1 && c == 1)
         return matrix[0][0];
-    if(r < c)
+    for(size_t i{}; i < r; i++)
     {
-        for(size_t i{}; i < r; i++)
-        {
-            sum += pow(-1, i) * determinant(minor(matrix,i,0));
-        }       
-    }
-        
-    else
-    {
-        for(size_t i{}; i < c; i++)
-        {
-            sum += pow(-1, i) * matrix[0][i] * determinant(minor(matrix,0,i));
-        }  
-    }
+        sum += matrix[i][0]*pow(-1, i) * determinant(minor(matrix,i,0));
+    }       
     return sum;
 }
 
@@ -272,11 +257,10 @@ Matrix inverse(const Matrix& matrix)
     
     if(matrix.empty())
     {
-        Matrix emp{};
-        return emp;
+        return matrix;
     }
     size_t r{ matrix.size() }, c{ matrix[0].size() };
-    Matrix handi_matrix(r, std::vector<double>(c, 0.0));
+    Matrix handi_matrix{zeros(r, c)};
     if(r != c)
     {
         std::logic_error e{"rows and colmuns are not equal"};
@@ -369,7 +353,7 @@ Matrix ero_swap(const Matrix& matrix, size_t r1, size_t r2)
         std::logic_error e{"out rage rows"};
         throw e;
     }
-    Matrix output{multiply(matrix, 1)};
+    Matrix output{matrix};
     std::vector<double> temp{ output[ r1]};
     output[r1] = output[r2];
     output[r2] = temp;
@@ -390,9 +374,8 @@ Matrix ero_multiply(const Matrix& matrix, size_t r, double c)
         std::logic_error e{"out rage row"};
         throw e;
     }
-    Matrix output{multiply(matrix, 1)};
-    std::vector<double> temp{ multiply(matrix, c)[r]};
-    output[r] = temp;
+    Matrix output{matrix};
+    output[r] =  multiply(matrix, c)[r];
     return output;
 }
 
@@ -424,8 +407,7 @@ Matrix upper_triangular(const Matrix& matrix)
 {  
     if(matrix.empty())
     {
-        Matrix emp{};
-        return emp;
+        return matrix;
     }
     size_t r{ matrix.size() }, c{ matrix[0].size() };
     if(r != c)
